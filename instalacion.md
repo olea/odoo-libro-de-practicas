@@ -7,6 +7,7 @@ Por Ismael Olea (<ismael@olea.org>) para la asignatura «Gestión de datos en Si
  
  - [x] empezar este documento
  - [ ] escribir alguna introducción
+ - [ ] conexión web cifrada X509
  - [ ] detallar los preliminares
  
 ## Preliminares
@@ -15,10 +16,15 @@ Este manual está escrito usando una configuración de sistemas operativos Fedor
 
 Es necesario instalar dependencias:
 
+``` bash
+dnf install -y docker-io fig    # instalamos los paquetes que vamos a necesitar con todas sus dependencias
+systemctl enable docker.service # activamos el servicio docker desde el arranque del sistema
+systemctl start docker.service  # ponemos en ejecución el servicio docker
 ```
-dnf install -y docker-io fig                # instalamos los paquetes que vamos a necesitar con todas sus dependencias
-systemctl enable docker.service     # activamos el servicio docker desde el arranque del sistema
-systemctl start docker.service       # ponemos en ejecución el servicio docker
+
+En general, para usar docker es necesario tener permisos de superusuario, pero podemos evitarlo añadiendo nuestro *usuario* al grupo adecuado del sistema:
+``` bash
+usermod usuario -G docker
 ```
 
  
@@ -32,7 +38,7 @@ También usaremos imágenes docker publicadas en el (registro público del proye
 
  Creamos el directorio para el proyecto (el nombre es arbitrario):
  
-```
+``` bash
 mkdir conf-odoo-docker
 cd conf-odoo-docker
 ```
@@ -86,7 +92,7 @@ Puede observarse que el fichero fig.yml es bastante explícito. Define tres cont
 
 Para saber si docker está operativo en nuestro sistema podemos usar la orden `docker info` que dará un resultado semejante a :
  
-```
+``` bash
 $ docker info
 Containers: 0
 Images: 158
@@ -109,14 +115,14 @@ Name: torlpedo.local
 ID: AWLT:ZWM2:TPPM:6ORZ:V4RH:LSYM:ZSTX:JUJP:HRRP:U4WS:YGGJ:MY2G
 ```
 Y verificamos que no hay contenedores instalados usando `docker ps -a`:
-```
+``` bash
 $ docker ps -a
 CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
 
 ```
 
 Entonces, desde el mismo subdirectorio en el que nos encontramos, podemos usar la orden fig para levantar la configuración de los tres contenedores:
-```
+``` bash
 $ fig up -d
 Creating odoodocker_dbfiles_1...
 Creating odoodocker_db_1...
@@ -132,7 +138,7 @@ Obsérvese:
  
  A continuación podemos comprobar que realmente nuestros contenedores están operativos
  
-```
+``` bash
 $ docker ps
 CONTAINER ID        IMAGE               COMMAND                CREATED             STATUS              PORTS                                                                    NAMES
 68f8e57d9b00        yajo/odoo:latest    "launch"               3 minutes ago       Up 3 minutes        0.0.0.0:1984->1984/tcp, 0.0.0.0:8069->8069/tcp, 0.0.0.0:8072->8072/tcp   odoodocker_app_1    
@@ -149,4 +155,12 @@ dae041f71baa        yajo/postgres:9.2    "/docker-entrypoint.   4 minutes ago   
 
 No profundizaremos más en *docker* solo explicando que cada contenedor es una instancia (en ejecución) de una imagen binaria determinada (tal cual un sistema de archivos de sistema) que a su vez está referenciada a una configuración con la cual se pueden realizar diferentes tareas de provisión y mantenimiento.
 
+# Configuración de Odoo
 
+A continuación Odoo necesita ser configurado a partir de su base de datos maestra. Para eso entraremos con el navegador en la dirección *http://odoo:8069/* (siendo *odoo* el nombre o la dirección IP de la máquina en la está alojado el contenedor):
+
+![configuración 01]( imagenes/instalacion-01.png)
+
+y rellenaremos los datos relacionados con la organización con la que vamos a trabajar
+
+ 
