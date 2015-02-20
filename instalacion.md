@@ -5,10 +5,12 @@ Por Ismael Olea (<ismael@olea.org>) para la asignatura «Gestión de datos en Si
 
 ## POR HACER 
  
- - [x] empezar este documento
+ - [x] instalación del software
+ - [ ] verificar las instrucciones de instalación
  - [ ] escribir alguna introducción
- - [ ] conexión web cifrada X509
- - [ ] detallar los preliminares
+ - [ ] configuración de conexión web cifrada X509 a traves de proxy inverso implementado en docker
+ - [ ] configuración de copias de seguridad (o del volumen de datos, vía docker, o vía volcados de bbdd)
+ - [ ] configuración de Odoo
  
 ## Preliminares
 
@@ -71,7 +73,7 @@ app:
 dbfiles:
     image: yajo/postgres:data
 db:
-    image: yajo/postgres:9.2
+    image: yajo/postgres
     volumes_from:
         - dbfiles
     environment:
@@ -86,7 +88,9 @@ Puede observarse que el fichero fig.yml es bastante explícito. Define tres cont
  * *dbfiles*: sólo contendrá física y meramente la base de datos de la aplicación
  *  *db*: contiene un SGBD *postgresql* que explotará los datos de *dbfiles* y al que atacará Odoo corriendo en *app*.
  
- La mayoría de los detalles de la configuración casi se explican por sí mismos.
+ Ojo con los parámetros *USER* y *PASSWORD*: son los del usuario administrador del servicio de SGBD y se usan internamente.
+ 
+ La mayoría de los otros detalles de la configuración casi se explican por sí mismos.
  
 ## Iniciando los contenedores
 
