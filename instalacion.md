@@ -14,7 +14,7 @@ Por Ismael Olea (<ismael@olea.org>) para la asignatura «Gestión de datos en Si
  
 ## Preliminares
 
-Este manual está escrito usando una configuración de sistemas operativos Fedora/CentOS/RHEL. Probablemente la mayor parte de los contenidos son aplicabables directamente o con cambios triviales en otras plataformas.
+Este manual está escrito usando una configuración de sistemas operativos Fedora/CentOS/RHEL. Probablemente la mayor parte de los contenidos son aplicabables directamente o con cambios triviales en otras plataformas. Las imágenes [Docker](https://www.docker.com/) están basadas en [CentOS](https://www.centos.org/).
 
 Es necesario instalar dependencias:
 
@@ -52,6 +52,64 @@ y dentro crearemos un fichero llamado *Dockerfile*:
 FROM yajo/odoo
 ADD extra-addons /opt/odoo/
 ```
+
+Una connfiguración de producción de Odoo que use desde fuera de una intranet exige de un acceso protegido, por ejemplo con TLS: en este caso se implementa lo que se llama [SSL Termination](https://en.wikipedia.org/wiki/SSL_termination_proxy). En nuestro caso usaremos [HAProxy](http://www.haproxy.org/) que es una herramienta [FLOSS](https://en.wikipedia.org/wiki/Free_and_open-source_software). Necesitamos crear una nueva imagen para usarlo en Docker. Esta imagen será un poco más elaborada por la necesidad de personalizar los certificados X509.
+
+Creamos el directorio para el proyecto (el nombre es arbitrario):
+
+``` bash
+mkdir haproxy-docker
+cd haproxy-docker
+```
+
+y dentro crearemos un fichero llamado *Dockerfile*:
+```
+# http://registry.hub.docker.com/u/yajo/haproxy/
+# OJO: esto está sin revisar :OJO
+FROM yajo/haproxy
+MAINTAINER ismael@olea.org
+# ADD my_config.cfg /etc/haproxy/
+# ADD my_other_config.cfg /etc/haproxy/
+# ADD gñññ /usr/local/sbin/prelaunch.sh # ¿mi configuración personal?
+EXPOSE 80 443
+
+```
+Entonces creamos la imagen dentro de nuestro servidor docker y obtendrás una salida semejante a:
+
+``` bash
+$ docker build -t olea/haproxy .
+Sending build context to Docker daemon  5.12 kB
+Sending build context to Docker daemon 
+Step 0 : FROM yajo/haproxy
+Pulling repository yajo/haproxy
+ba3b220e5b5e: Download complete 
+511136ea3c5a: Download complete 
+5b12ef8fd570: Download complete 
+dade6cb4530a: Download complete 
+98561282c17c: Download complete 
+79ca2099aa19: Download complete 
+f80f8e0efe32: Download complete 
+cba3499e093d: Download complete 
+d1d109614f3e: Download complete 
+b392f72b070b: Download complete 
+Status: Image is up to date for yajo/haproxy:latest
+ ---> ba3b220e5b5e
+Step 1 : MAINTAINER ismael@olea.org
+ ---> Using cache
+ ---> 12465b053cc5
+Step 2 : EXPOSE 80 443
+ ---> Running in 1850282ca444
+ ---> 0bf7dbc7b33a
+Removing intermediate container 1850282ca444
+Successfully built 0bf7dbc7b33a
+```
+Podemos verificar que las imágenes docker han sido creadas con un resultado semejante a:
+```
+$ docker images -a|grep haproxy
+olea/haproxy        latest              0bf7dbc7b33a        12 seconds ago      309.3 MB
+yajo/haproxy        latest              ba3b220e5b5e        3 weeks ago         309.3 MB
+```
+
 
 y otro fichero llamado *fig.yml*:
 ```
